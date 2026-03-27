@@ -142,20 +142,22 @@ public class JsonValueFormatter : LogEventPropertyValueVisitor<TextWriter, bool>
             {
                 state.Write(delim.Value);
             }
+
             delim = ',';
             var key = element.Key.Value;
-            if (key == null)
+            if (key is null)
             {
-                state.Write("\"null\"");
+                state.Write("\"null\":");
             }
             else
             {
                 WriteQuotedJsonString(key.ToString()!, state);
+                state.Write(':');
             }
 
-            state.Write(':');
             Visit(state, element.Value);
         }
+
         state.Write('}');
         return false;
     }
