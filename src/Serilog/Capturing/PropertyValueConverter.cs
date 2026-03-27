@@ -508,7 +508,8 @@ partial class PropertyValueConverter : ILogEventPropertyFactory, ILogEventProper
         seenNames.Clear();
         _lastSeenNames = seenNames;
 
-        Array.Resize(ref result, nextResult);
+        if (nextResult != result.Length)
+            Array.Resize(ref result, nextResult);
         return new StructureValue(result, typeTag);
     }
 
