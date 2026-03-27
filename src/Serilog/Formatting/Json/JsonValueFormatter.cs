@@ -570,66 +570,7 @@ public class JsonValueFormatter : LogEventPropertyValueVisitor<TextWriter, bool>
     public static void WriteQuotedJsonString(string str, TextWriter output)
     {
         output.Write('\"');
-
-        var cleanSegmentStart = 0;
-        var anyEscaped = false;
-
-        for (var i = 0; i < str.Length; ++i)
-        {
-            var c = str[i];
-            if (c is < (char)32 or '\\' or '"')
-            {
-                anyEscaped = true;
-
-#if FEATURE_SPAN
-                output.Write(str.AsSpan().Slice(cleanSegmentStart, i - cleanSegmentStart));
-#else
-                output.Write(str.Substring(cleanSegmentStart, i - cleanSegmentStart));
-#endif
-                cleanSegmentStart = i + 1;
-
-                switch (c)
-                {
-                    case '"':
-                        output.Write("\\\"");
-                        break;
-                    case '\\':
-                        output.Write("\\\\");
-                        break;
-                    case '\n':
-                        output.Write("\\n");
-                        break;
-                    case '\r':
-                        output.Write("\\r");
-                        break;
-                    case '\f':
-                        output.Write("\\f");
-                        break;
-                    case '\t':
-                        output.Write("\\t");
-                        break;
-                    default:
-                        output.Write("\\u");
-                        output.Write(((int)c).ToString("X4"));
-                        break;
-                }
-            }
-        }
-
-        if (anyEscaped)
-        {
-            if (cleanSegmentStart != str.Length)
-#if FEATURE_SPAN
-                output.Write(str.AsSpan().Slice(cleanSegmentStart));
-#else
-                output.Write(str.Substring(cleanSegmentStart));
-#endif
-        }
-        else
-        {
-            output.Write(str);
-        }
-
+        StringSegmentWriter.WriteEscaped(str, output, default(JsonCharEscaper));
         output.Write('\"');
     }
 }

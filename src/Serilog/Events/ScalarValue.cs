@@ -68,7 +68,7 @@ public class ScalarValue : LogEventPropertyValue
             if (format != "l")
             {
                 output.Write('"');
-                output.Write(s.Replace("\"", "\\\""));
+                StringSegmentWriter.WriteEscaped(s, output, default(QuoteEscaper));
                 output.Write('"');
             }
             else
@@ -151,4 +151,5 @@ public class ScalarValue : LogEventPropertyValue
         if (Value == null) return 0;
         return Value.GetHashCode();
     }
+
 }
