@@ -28,6 +28,52 @@ public class FailureListenerTests
     }
 
     [Fact]
+    public void RestrictedSinkForwardsFailureListenerToInnerSink()
+    {
+        var trackingSink = new ListenerTrackingSink();
+        var restricted = new RestrictedSink(trackingSink, new LoggingLevelSwitch());
+        var listener = new CollectingFailureListener();
+
+        restricted.SetFailureListener(listener);
+
+        Assert.Same(listener, trackingSink.Listener);
+    }
+
+    [Fact]
+    public void RestrictedToMinimumLevelAllowsFailureListenerPropagation()
+    {
+        var trackingSink = new ListenerTrackingSink();
+
+        using (var logger = new LoggerConfiguration()
+                   .WriteTo.FallbackChain(
+                       wt => wt.Sink(trackingSink, restrictedToMinimumLevel: Information),
+                       wt => wt.Sink(new CollectingSink()))
+                   .CreateLogger())
+        {
+            logger.Write(Some.InformationEvent());
+        }
+
+        Assert.NotNull(trackingSink.Listener);
+    }
+
+    [Fact]
+    public void DefaultLevelAllowsFailureListenerPropagation()
+    {
+        var trackingSink = new ListenerTrackingSink();
+
+        using (var logger = new LoggerConfiguration()
+                   .WriteTo.FallbackChain(
+                       wt => wt.Sink(trackingSink),
+                       wt => wt.Sink(new CollectingSink()))
+                   .CreateLogger())
+        {
+            logger.Write(Some.InformationEvent());
+        }
+
+        Assert.NotNull(trackingSink.Listener);
+    }
+
+    [Fact]
     public void ShallowFallbackChainsAreEffective()
     {
         var disposeTracker1 = new DisposeTrackingSink();

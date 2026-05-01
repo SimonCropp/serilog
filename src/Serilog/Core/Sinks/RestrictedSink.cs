@@ -14,7 +14,7 @@
 
 namespace Serilog.Core.Sinks;
 
-sealed class RestrictedSink : ILogEventSink, IDisposable
+sealed class RestrictedSink : ILogEventSink, IDisposable, ISetLoggingFailureListener
 #if FEATURE_ASYNCDISPOSABLE
     , IAsyncDisposable
 #endif
@@ -36,6 +36,14 @@ sealed class RestrictedSink : ILogEventSink, IDisposable
             return;
 
         _sink.Emit(logEvent);
+    }
+
+    public void SetFailureListener(ILoggingFailureListener failureListener)
+    {
+        if (_sink is ISetLoggingFailureListener sfl)
+        {
+            sfl.SetFailureListener(failureListener);
+        }
     }
 
     public void Dispose()
